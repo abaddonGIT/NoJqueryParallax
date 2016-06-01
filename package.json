@@ -1,0 +1,32 @@
+{
+  "name": "gulp-w3c-validate",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abaddonGIT/gulp-w3c-validate.git"
+  },
+  "keywords": [
+    "gulpplugin",
+    "html",
+    "validate",
+    "validation",
+    "w3c",
+    "css"
+  ],
+  "author": {
+    "name": "Abaddon65",
+    "email": "abaddongit@gmail.com",
+    "url": "https://github.com/abaddonGIT"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "latest"
+  },
+  "devDependencies": {
+    "gulp-util": "^3.0.7",
+    "object-assign": "latest",
+    "through2": "^2.0.1",
+    "w3cjs": "^0.3.0",
+    "dot": "latest"
+  }
+}

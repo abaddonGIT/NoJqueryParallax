@@ -1,0 +1,10 @@
+# Created by .ignore support plugin (hsz.mobi)
+node_modules
+.idea
+.idea/*
+.idea/libraries/Generated_files.xml
+gulpfile-compiled.js
+gulpfile-compiled.js.map
+index-compiled.js
+index-compiled.js.map
+*.-compiled.js

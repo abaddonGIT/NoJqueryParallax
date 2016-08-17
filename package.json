@@ -1,16 +1,16 @@
 {
-  "name": "gulp-w3c-validate",
+  "name": "NoJqueryParallax",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/abaddonGIT/gulp-w3c-validate.git"
+    "url": "https://github.com/abaddonGIT/NoJqueryParallax"
   },
   "keywords": [
-    "gulpplugin",
-    "html",
-    "validate",
-    "validation",
-    "w3c",
+    "noJquery",
+    "effect",
+    "parallax",
+    "animation",
+    "js",
     "css"
   ],
   "author": {
@@ -23,10 +23,5 @@
     "gulp": "latest"
   },
   "devDependencies": {
-    "gulp-util": "^3.0.7",
-    "object-assign": "latest",
-    "through2": "^2.0.1",
-    "w3cjs": "^0.3.0",
-    "dot": "latest"
   }
 }

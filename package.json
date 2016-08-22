@@ -23,5 +23,25 @@
     "gulp": "latest"
   },
   "devDependencies": {
+    "babelify": "latest",
+    "babel-preset-es2015": "latest",
+    "babel-preset-stage-0": "latest",
+    "vinyl-source-stream": "latest",
+    "browserify": "latest",
+    "object-assign": "latest",
+    "promise": "latest"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015",
+            "stage-0"
+          ]
+        }
+      ]
+    ]
   }
 }

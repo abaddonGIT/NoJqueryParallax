@@ -8,3 +8,4 @@ gulpfile-compiled.js.map
 index-compiled.js
 index-compiled.js.map
 *.-compiled.js
+*.css

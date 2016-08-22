@@ -2,15 +2,14 @@
  * Created by Abaddon on 22.08.2016.
  */
 "use strict";
-import merge from "object-assign";
 import Item from "./utility/ParallaxBox";
 import ImageParallax from "./utility/ImageParallax";
 
 class NoJqueryParallax {
     constructor(options) {
         //Set plugin options
-        this.config = merge({
-            box: ".js-parallax-box",
+        this.config = NoJqueryParallax.merge({
+            box: ".js-parallax-box", 
             bg: ".js-parallax-bg"
         }, options);
     }
@@ -18,7 +17,7 @@ class NoJqueryParallax {
     /**
      * Run parallax effect
      */
-    run() { 
+    run() {
         this.sections = document.querySelectorAll(this.config.box);
         let ln = this.sections.length;
         if (!ln) return false;
@@ -38,6 +37,21 @@ class NoJqueryParallax {
                 }
             }
         }, 500);
+    }
+
+    /**
+     * Ext object
+     * @param self
+     * @param source
+     * @returns {*}
+     */
+    static merge(self, source) {
+        for (let i in source) {
+            if (source.hasOwnProperty(i)) {
+                self[i] = source[i];
+            }
+        }
+        return self;
     }
 }
 

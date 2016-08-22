@@ -11,10 +11,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _objectAssign = require("object-assign");
-
-var _objectAssign2 = _interopRequireDefault(_objectAssign);
-
 var _ParallaxBox = require("./utility/ParallaxBox");
 
 var _ParallaxBox2 = _interopRequireDefault(_ParallaxBox);
@@ -32,7 +28,7 @@ var NoJqueryParallax = function () {
         _classCallCheck(this, NoJqueryParallax);
 
         //Set plugin options
-        this.config = (0, _objectAssign2.default)({
+        this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
             bg: ".js-parallax-bg"
         }, options);
@@ -68,6 +64,24 @@ var NoJqueryParallax = function () {
                 }
             }, 500);
         }
+
+        /**
+         * Ext object
+         * @param self
+         * @param source
+         * @returns {*}
+         */
+
+    }], [{
+        key: "merge",
+        value: function merge(self, source) {
+            for (var i in source) {
+                if (source.hasOwnProperty(i)) {
+                    self[i] = source[i];
+                }
+            }
+            return self;
+        }
     }]);
 
     return NoJqueryParallax;
@@ -78,7 +92,7 @@ global.NoJqueryParallax = NoJqueryParallax;
 exports.default = NoJqueryParallax;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./utility/ImageParallax":14,"./utility/ParallaxBox":15,"object-assign":4}],2:[function(require,module,exports){
+},{"./utility/ImageParallax":13,"./utility/ParallaxBox":14}],2:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -372,95 +386,10 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
 'use strict';
-/* eslint-disable no-unused-vars */
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-
-function toObject(val) {
-	if (val === null || val === undefined) {
-		throw new TypeError('Object.assign cannot be called with null or undefined');
-	}
-
-	return Object(val);
-}
-
-function shouldUseNative() {
-	try {
-		if (!Object.assign) {
-			return false;
-		}
-
-		// Detect buggy property enumeration order in older V8 versions.
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
-		var test1 = new String('abc');  // eslint-disable-line
-		test1[5] = 'de';
-		if (Object.getOwnPropertyNames(test1)[0] === '5') {
-			return false;
-		}
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-		var test2 = {};
-		for (var i = 0; i < 10; i++) {
-			test2['_' + String.fromCharCode(i)] = i;
-		}
-		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
-			return test2[n];
-		});
-		if (order2.join('') !== '0123456789') {
-			return false;
-		}
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-		var test3 = {};
-		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
-			test3[letter] = letter;
-		});
-		if (Object.keys(Object.assign({}, test3)).join('') !==
-				'abcdefghijklmnopqrst') {
-			return false;
-		}
-
-		return true;
-	} catch (e) {
-		// We don't expect any of the above to throw, but better to be safe.
-		return false;
-	}
-}
-
-module.exports = shouldUseNative() ? Object.assign : function (target, source) {
-	var from;
-	var to = toObject(target);
-	var symbols;
-
-	for (var s = 1; s < arguments.length; s++) {
-		from = Object(arguments[s]);
-
-		for (var key in from) {
-			if (hasOwnProperty.call(from, key)) {
-				to[key] = from[key];
-			}
-		}
-
-		if (Object.getOwnPropertySymbols) {
-			symbols = Object.getOwnPropertySymbols(from);
-			for (var i = 0; i < symbols.length; i++) {
-				if (propIsEnumerable.call(from, symbols[i])) {
-					to[symbols[i]] = from[symbols[i]];
-				}
-			}
-		}
-	}
-
-	return to;
-};
-
-},{}],5:[function(require,module,exports){
-'use strict';
 
 module.exports = require('./lib')
 
-},{"./lib":10}],6:[function(require,module,exports){
+},{"./lib":9}],5:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -675,7 +604,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":3}],7:[function(require,module,exports){
+},{"asap/raw":3}],6:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -690,7 +619,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
   });
 };
 
-},{"./core.js":6}],8:[function(require,module,exports){
+},{"./core.js":5}],7:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -799,7 +728,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":6}],9:[function(require,module,exports){
+},{"./core.js":5}],8:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -817,7 +746,7 @@ Promise.prototype['finally'] = function (f) {
   });
 };
 
-},{"./core.js":6}],10:[function(require,module,exports){
+},{"./core.js":5}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./core.js');
@@ -827,7 +756,7 @@ require('./es6-extensions.js');
 require('./node-extensions.js');
 require('./synchronous.js');
 
-},{"./core.js":6,"./done.js":7,"./es6-extensions.js":8,"./finally.js":9,"./node-extensions.js":11,"./synchronous.js":12}],11:[function(require,module,exports){
+},{"./core.js":5,"./done.js":6,"./es6-extensions.js":7,"./finally.js":8,"./node-extensions.js":10,"./synchronous.js":11}],10:[function(require,module,exports){
 'use strict';
 
 // This file contains then/promise specific extensions that are only useful
@@ -959,7 +888,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   });
 }
 
-},{"./core.js":6,"asap":2}],12:[function(require,module,exports){
+},{"./core.js":5,"asap":2}],11:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -1023,7 +952,7 @@ Promise.disableSynchronous = function() {
   Promise.prototype.getState = undefined;
 };
 
-},{"./core.js":6}],13:[function(require,module,exports){
+},{"./core.js":5}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1116,7 +1045,7 @@ var BaseParallax = function () {
 
 exports.default = BaseParallax;
 
-},{"./device":16,"promise":5}],14:[function(require,module,exports){
+},{"./device":15,"promise":4}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1230,9 +1159,7 @@ var ImageParallax = function (_Base) {
 
     }, {
         key: "setBlock",
-        value: function setBlock() {
-            console.log("set");
-        }
+        value: function setBlock() {}
     }]);
 
     return ImageParallax;
@@ -1240,7 +1167,7 @@ var ImageParallax = function (_Base) {
 
 exports.default = ImageParallax;
 
-},{"./BaseParallax":13,"promise":5}],15:[function(require,module,exports){
+},{"./BaseParallax":12,"promise":4}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1318,6 +1245,11 @@ var ParallaxBox = function () {
     }, {
         key: "setInvert",
         value: function setInvert(value) {
+            if (value === "true") {
+                this.type = "invert";
+            } else {
+                this.type = "normal";
+            }
             this.invert = value;
         }
     }, {
@@ -1377,7 +1309,7 @@ var ParallaxBox = function () {
 
 exports.default = ParallaxBox;
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 
 /*! device.js 0.1.58 */

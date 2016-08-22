@@ -28,7 +28,6 @@
     "babel-preset-stage-0": "latest",
     "vinyl-source-stream": "latest",
     "browserify": "latest",
-    "object-assign": "latest",
     "promise": "latest"
   },
   "browserify": {

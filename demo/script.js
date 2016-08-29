@@ -3,6 +3,7 @@
  */
 "use strict";
 (function (d, w) {
+    $('.flexslider').flexslider();
     var parallax = new NoJqueryParallax();
     parallax.run();
 }(document, window)); 

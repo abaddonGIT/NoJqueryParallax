@@ -1,10 +1,23 @@
+@import "flex/flexslider.css";
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 .parallax-box {
   position: relative;
+  overflow: hidden;
 }
 
 .parallax-content {
   position: relative;
   z-index: 2;
+  padding: 100px 0;
+}
+
+.js-parallax-inner {
+  position: relative;
 }
 
 .parallax-bg {
@@ -22,4 +35,8 @@
   background-size: cover;
   background-position: center;
   max-width: none;
+}
+
+video {
+  position: relative;
 }

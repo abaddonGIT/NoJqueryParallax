@@ -1,4 +1,890 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by Abaddon on 23.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _promise = require("promise");
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _UsesFunction = require("../utility/UsesFunction");
+
+var _UsesFunction2 = _interopRequireDefault(_UsesFunction);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var BaseParallax = function () {
+    function BaseParallax() {
+        _classCallCheck(this, BaseParallax);
+    }
+
+    _createClass(BaseParallax, [{
+        key: "start",
+
+        /**
+         * Start parallax
+         */
+        value: function start() {
+            this.setViewProps();
+        }
+
+        /**
+         * Set window properties
+         */
+
+    }, {
+        key: "setViewProps",
+        value: function setViewProps() {
+            this.view = Object.defineProperties({}, {
+                w: {
+                    value: window
+                },
+                d: {
+                    value: document
+                },
+                element: {
+                    set: function set(value) {
+                        this._element = value;
+                        this.width = this.element.offsetWidth;
+                        this.height = this.element.clientHeight;
+                    },
+                    get: function get() {
+                        return this._element;
+                    }
+                }
+            });
+            this.view.element = this.view.d.documentElement;
+        }
+
+        /**
+         * Resize event handler
+         */
+
+    }, {
+        key: "resizeTick",
+        value: function resizeTick() {
+            this.view.width = this.view.element.offsetWidth;
+            this.view.height = this.view.element.clientHeight;
+
+            this.setPosition();
+            if (this.box.isResize()) {
+                this.box.setBaseHeight(this.determineBoxHeight());
+                this.setInnerStyle();
+            }
+            this.scrollTick();
+        }
+
+        /**
+         * Scroll event handler
+         * @private
+         */
+
+    }, {
+        key: "scrollTick",
+        value: function scrollTick() {
+            if (this.box.isParallax() && !_UsesFunction2.default.isLiteMode() && this.box.getInner()) {
+                var scrollTop = void 0,
+                    start = void 0,
+                    end = void 0,
+                    offsetTop = void 0;
+
+                offsetTop = this.getOffset(this.box.getItem()).top;
+                scrollTop = this.view.w.pageYOffset || this.view.element.scrollTop;
+
+                start = scrollTop + this.view.height;
+                end = scrollTop - this.box.getItem().offsetHeight;
+
+                if (start > offsetTop && end < offsetTop) {
+                    var y = scrollTop - offsetTop,
+                        newPosition = void 0;
+
+                    if (!this.box.isInvert()) {
+                        newPosition = parseInt(y / this.box.getRatio());
+                    } else {
+                        newPosition = -parseInt(y / this.box.getRatio()) - parseInt(this.view.height / this.box.getRatio());
+                    }
+
+                    this.box.getInner().style.cssText += this.getTransformStyles(newPosition);
+                }
+            }
+        }
+
+        /**
+         * Get position styles
+         * @param position
+         * @returns {string}
+         */
+
+    }, {
+        key: "getTransformStyles",
+        value: function getTransformStyles(position) {
+            var ie = _UsesFunction2.default.ieVersion();
+            if ((ie === -1 || ie > 9) && !_UsesFunction2.default.isSafari()) {
+                return "transform: translate3d(0, " + position + "px, 0);";
+            } else {
+                return "top: " + position + "px;";
+            }
+        }
+
+        /**
+         * Set element position
+         */
+
+    }, {
+        key: "setPosition",
+        value: function setPosition() {
+            this.box.getItem().style.cssText = " width: " + this.view.width + "px; margin-left: " + Math.floor(this.view.width * -0.5) + "px; left: 50%;";
+        }
+
+        /**
+         * Determine parallax block height
+         */
+
+    }, {
+        key: "determineBoxHeight",
+        value: function determineBoxHeight() {
+            var newHeight = 0,
+                height = this.box.getItem().offsetHeight;
+            switch (this.box.getType()) {
+                case 'normal':
+                    newHeight = height + parseInt((this.view.height - height) / this.box.getRatio());
+                    break;
+                case 'invert':
+                    newHeight = height + parseInt((this.view.height + height) / this.box.getRatio());
+                    break;
+            }
+            return newHeight;
+        }
+
+        /**
+         * Set inner bg style
+         */
+
+    }, {
+        key: "setInnerStyle",
+        value: function setInnerStyle() {
+            if (this.box.getInner() && this.box.getOricSizes()) {
+                var obj = this.box.getInner(),
+                    sizes = this.box.getOricSizes(),
+                    imageRatio = void 0,
+                    newImgWidth = void 0,
+                    newImgHeight = void 0,
+                    newImgTop = void 0,
+                    newImgLeft = void 0;
+
+                imageRatio = sizes.height / sizes.width;
+                var containerRatio = this.box.getBaseHeight() / this.view.width;
+
+                if (containerRatio > imageRatio) {
+                    newImgHeight = this.box.getBaseHeight();
+                    newImgWidth = Math.round(newImgHeight * sizes.width / sizes.height);
+                } else {
+                    newImgWidth = this.view.width;
+                    newImgHeight = Math.round(newImgWidth * sizes.height / sizes.width);
+                }
+
+                newImgLeft = -(newImgWidth - this.view.width) * .5;
+                newImgTop = -(newImgHeight - this.box.getBaseHeight()) * .5;
+
+                obj.style.cssText += "width: " + newImgWidth + "px; height: " + newImgHeight + "px; margin-top: " + newImgTop + "px; margin-left: " + newImgLeft + "px;";
+            }
+        }
+
+        /**
+         * Get element position
+         */
+
+    }, {
+        key: "getOffset",
+        value: function getOffset() {
+            var box = this.box.getItem().getBoundingClientRect(),
+                body = this.view.d.body,
+                docElem = this.view.element;
+
+            var scrollTop = this.view.w.pageYOffset || docElem.scrollTop || body.scrollTop,
+                scrollLeft = this.view.w.pageXOffset || docElem.scrollLeft || body.scrollLeft,
+                clientTop = docElem.clientTop || body.clientTop || 0,
+                clientLeft = docElem.clientLeft || body.clientLeft || 0;
+
+            return {
+                top: Math.round(box.top + scrollTop - clientTop),
+                left: Math.round(box.left + scrollLeft - clientLeft)
+            };
+        }
+
+        /**
+         * Load background image
+         */
+
+    }, {
+        key: "loadImg",
+        value: function loadImg() {
+            return new _promise2.default(function (resolve, reject) {
+                var _this = this;
+
+                var img = this.createImage();
+                img.onload = function () {
+                    _this.box.setOricSizes({ width: img.width, height: img.height });
+                    _this.setInner();
+                    resolve();
+                };
+                img.onerror = function () {
+                    reject();
+                };
+            }.bind(this));
+        }
+
+        /**
+         * Create and return image object
+         * @returns {*}
+         */
+
+    }, {
+        key: "createImage",
+        value: function createImage() {
+            var img = new Image();
+            img.src = this.box.getUrl();
+            return img;
+        }
+
+        /**
+         * Create inner structure
+         */
+
+    }, {
+        key: "setInner",
+        value: function setInner() {
+            if (!_UsesFunction2.default.isLiteMode()) {
+                this.box.getItem().innerHTML = "<div class='parallax-bg-inner'></div>";
+                this.box.getInner().style.cssText += "background-image: url(" + this.box.getUrl() + ");";
+            } else {
+                this.box.getItem().innerHTML = "<img class='parallax-bg-inner' src='" + this.box.getUrl() + "' alt=''/>";
+                this.box.setRatio(1);
+            }
+        }
+    }]);
+
+    return BaseParallax;
+}();
+
+exports.default = BaseParallax;
+
+},{"../utility/UsesFunction":18,"promise":9}],2:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _BaseParallax = require("./BaseParallax");
+
+var _BaseParallax2 = _interopRequireDefault(_BaseParallax);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by Abaddon on 23.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+
+var ContentParallax = function (_Base) {
+    _inherits(ContentParallax, _Base);
+
+    function ContentParallax(box) {
+        _classCallCheck(this, ContentParallax);
+
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ContentParallax).call(this));
+
+        _this.box = box;
+        return _this;
+    }
+
+    /**
+     * Start parallax
+     */
+
+
+    _createClass(ContentParallax, [{
+        key: "start",
+        value: function start() {
+            _get(Object.getPrototypeOf(ContentParallax.prototype), "start", this).call(this);
+        }
+
+        /**
+         * Load content
+         */
+
+    }, {
+        key: "loadContent",
+        value: function loadContent() {
+            this.setBlock();
+        }
+
+        /**
+         * Calc and set sizes for block
+         */
+
+    }, {
+        key: "setBlock",
+        value: function setBlock() {
+            this.resizeTick();
+        }
+    }]);
+
+    return ContentParallax;
+}(_BaseParallax2.default);
+
+exports.default = ContentParallax;
+
+},{"./BaseParallax":1}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _BaseParallax = require("./BaseParallax");
+
+var _BaseParallax2 = _interopRequireDefault(_BaseParallax);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by Abaddon on 23.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+
+var ImageParallax = function (_Base) {
+    _inherits(ImageParallax, _Base);
+
+    function ImageParallax(box) {
+        _classCallCheck(this, ImageParallax);
+
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ImageParallax).call(this));
+
+        _this.box = box;
+        return _this;
+    }
+
+    /**
+     * Start parallax
+     */
+
+
+    _createClass(ImageParallax, [{
+        key: "start",
+        value: function start() {
+            var _this2 = this;
+
+            _get(Object.getPrototypeOf(ImageParallax.prototype), "start", this).call(this);
+            this.loadImg().then(function () {
+                _this2.setBlock();
+            }, function () {
+                console.error("Image source load error!");
+            });
+        }
+
+        /**
+         * Calc and set sizes for block
+         */
+
+    }, {
+        key: "setBlock",
+        value: function setBlock() {
+            this.resizeTick();
+        }
+    }]);
+
+    return ImageParallax;
+}(_BaseParallax2.default);
+
+exports.default = ImageParallax;
+
+},{"./BaseParallax":1}],4:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Created by Abaddon on 23.08.2016.
+ */
+var ParallaxBox = function () {
+    function ParallaxBox(box, selector) {
+        _classCallCheck(this, ParallaxBox);
+
+        this.el = box.querySelector(selector);
+        this.box = box;
+        this.parallax = true;
+        this.type = "none";
+        this.setInvert(this.el.getAttribute("data-invert"));
+        this.sourceType = this.el.getAttribute("data-parallax-type");
+        this.setSpeed(this.el.getAttribute("data-speed"));
+        this.url = this.el.getAttribute("data-img-url");
+        this.resize = true;
+        this.baseHeight = 0;
+    }
+
+    /**
+     * Remove video element
+     */
+
+
+    _createClass(ParallaxBox, [{
+        key: "removeVideo",
+        value: function removeVideo() {
+            this.el.removeChild(this.getInner());
+        }
+
+        /**
+         * Save block height
+         * @param value
+         */
+
+    }, {
+        key: "setBaseHeight",
+        value: function setBaseHeight(value) {
+            this.baseHeight = value;
+        }
+
+        /**
+         * Return block height
+         * @returns {number|*}
+         */
+
+    }, {
+        key: "getBaseHeight",
+        value: function getBaseHeight() {
+            return this.baseHeight;
+        }
+
+        /**
+         * Set resize flag
+         * @param value
+         */
+
+    }, {
+        key: "setResize",
+        value: function setResize(value) {
+            this.resize = value;
+        }
+
+        /**
+         * Check resize flag
+         * @returns {boolean|*}
+         */
+
+    }, {
+        key: "isResize",
+        value: function isResize() {
+            return this.resize;
+        }
+
+        /**
+         * Save parallax type
+         * @param value
+         */
+
+    }, {
+        key: "setType",
+        value: function setType(value) {
+            this.type = value;
+        }
+
+        /**
+         * Return parallax type
+         * @returns {string|string|*|string}
+         */
+
+    }, {
+        key: "getType",
+        value: function getType() {
+            return this.type;
+        }
+
+        /**
+         * Return parallax dom element
+         * @returns {Element|*}
+         */
+
+    }, {
+        key: "getItem",
+        value: function getItem() {
+            return this.el;
+        }
+
+        /**
+         * Return parallax inner dom element
+         * @returns {Element|*}
+         */
+
+    }, {
+        key: "getInner",
+        value: function getInner() {
+            if (this.inner) {
+                return this.inner;
+            } else {
+                switch (this.sourceType) {
+                    case "video":
+                        this.inner = this.el.querySelector("video");
+                        this.sources = this.inner.querySelectorAll("source");
+                        break;
+                    case "image":
+                        this.inner = this.el.querySelector(".parallax-bg-inner");
+                        break;
+                    case "content":
+                        this.inner = this.el.querySelector(".js-parallax-inner");
+                        break;
+                }
+                return this.inner;
+            }
+        }
+
+        /**
+         * Save parallax invert flag
+         * @param value
+         */
+
+    }, {
+        key: "setInvert",
+        value: function setInvert(value) {
+            if (value === "true") {
+                this.type = "invert";
+            } else {
+                this.type = "normal";
+            }
+            this.invert = value;
+        }
+
+        /**
+         * Check invert flag
+         * @returns {boolean}
+         */
+
+    }, {
+        key: "isInvert",
+        value: function isInvert() {
+            return this.invert === "true";
+        }
+
+        /**
+         * Set parallax effect speed
+         * @param value
+         */
+
+    }, {
+        key: "setSpeed",
+        value: function setSpeed(value) {
+            switch (value) {
+                case "low":
+                    this.setRatio(3);
+                    break;
+                case "normal":
+                    this.setRatio(2.25);
+                    break;
+                case "hight":
+                    this.setRatio(1.5);
+                    break;
+                default:
+                    this.setRatio(2.25);
+            }
+            this.speed = value;
+        }
+
+        /**
+         * Return current speed
+         * @returns {*}
+         */
+
+    }, {
+        key: "getSpeed",
+        value: function getSpeed() {
+            return this.speed;
+        }
+
+        /**
+         * Set source ratio
+         * @param value
+         */
+
+    }, {
+        key: "setRatio",
+        value: function setRatio(value) {
+            this.bufferRatio = value;
+        }
+
+        /**
+         * Get current ratio
+         * @returns {*}
+         */
+
+    }, {
+        key: "getRatio",
+        value: function getRatio() {
+            return this.bufferRatio;
+        }
+
+        /**
+         * Parallax source type
+         * @returns {string|*}
+         */
+
+    }, {
+        key: "getSourceType",
+        value: function getSourceType() {
+            return this.sourceType;
+        }
+
+        /**
+         * Set parallax flag
+         * @param value
+         */
+
+    }, {
+        key: "setParallax",
+        value: function setParallax(value) {
+            this.parallax = value;
+        }
+
+        /**
+         * Run parallax flag
+         * @returns {*|boolean}
+         */
+
+    }, {
+        key: "isParallax",
+        value: function isParallax() {
+            return this.parallax;
+        }
+
+        /**
+         * Get source url
+         * @returns {string|*}
+         */
+
+    }, {
+        key: "getUrl",
+        value: function getUrl() {
+            return this.url;
+        }
+
+        /**
+         * Save original size
+         * @param value
+         */
+
+    }, {
+        key: "setOricSizes",
+        value: function setOricSizes(value) {
+            this.sizes = value;
+        }
+
+        /**
+         * Return original size source
+         * @returns {*}
+         */
+
+    }, {
+        key: "getOricSizes",
+        value: function getOricSizes() {
+            return this.sizes;
+        }
+    }]);
+
+    return ParallaxBox;
+}();
+
+exports.default = ParallaxBox;
+
+},{}],5:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _BaseParallax = require("./BaseParallax");
+
+var _BaseParallax2 = _interopRequireDefault(_BaseParallax);
+
+var _UsesFunction = require("../utility/UsesFunction");
+
+var _UsesFunction2 = _interopRequireDefault(_UsesFunction);
+
+var _promise = require("promise");
+
+var _promise2 = _interopRequireDefault(_promise);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by Abaddon on 23.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
+
+
+var VideoParallax = function (_Base) {
+    _inherits(VideoParallax, _Base);
+
+    function VideoParallax(box) {
+        _classCallCheck(this, VideoParallax);
+
+        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(VideoParallax).call(this));
+
+        _this.box = box;
+        return _this;
+    }
+
+    /**
+     * Start parallax
+     */
+
+
+    _createClass(VideoParallax, [{
+        key: "start",
+        value: function start() {
+            var _this2 = this;
+
+            _get(Object.getPrototypeOf(VideoParallax.prototype), "start", this).call(this);
+            if (!_UsesFunction2.default.isLiteMode()) {
+                this.loadVideo().then(function () {
+                    _this2.setBlock();
+                }, function () {
+                    console.error("Source load error!");
+                });
+            } else {
+                this.loadImg().then(function () {
+                    _this2.setBlock();
+                }, function () {
+                    console.error("Source load error!");
+                });
+            }
+        }
+
+        /**
+         * Load video source
+         */
+
+    }, {
+        key: "loadVideo",
+        value: function loadVideo() {
+            return new _promise2.default(function (resolve, reject) {
+                var _this3 = this;
+
+                var video = this.box.getInner();
+                video.load();
+                video.play();
+                this.setVideoTagSettings();
+                video.onloadeddata = function () {
+                    _this3.box.setOricSizes({ width: video.videoWidth, height: video.videoHeight });
+                    resolve();
+                };
+                video.onerror = function () {
+                    reject();
+                };
+                //set sources error handlers
+                var sourceLn = this.box.sources.length;
+                if (sourceLn) {
+                    while (sourceLn--) {
+                        var source = this.box.sources[sourceLn];
+                        source.onerror = function () {
+                            reject();
+                        };
+                    }
+                }
+            }.bind(this));
+        }
+
+        /**
+         * Set video settings
+         */
+
+    }, {
+        key: "setVideoTagSettings",
+        value: function setVideoTagSettings() {
+            var video = this.box.getInner(),
+                loop = video.getAttribute("data-loop"),
+                volume = parseInt(video.getAttribute("data-volume"));
+
+            if (!isNaN(volume)) {
+                video.volume = volume / 100;
+            }
+
+            if (loop === "true") {
+                video.onended = function () {
+                    video.pause();
+                    video.currentTime = 0;
+                    video.load();
+                    video.play();
+                };
+            }
+        }
+
+        /**
+         * Load img source
+         */
+
+    }, {
+        key: "loadImg",
+        value: function loadImg() {
+            this.box.removeVideo();
+            return _get(Object.getPrototypeOf(VideoParallax.prototype), "loadImg", this).call(this);
+        }
+
+        /**
+         * Calc and set sizes for block
+         */
+
+    }, {
+        key: "setBlock",
+        value: function setBlock() {
+            this.resizeTick();
+        }
+    }]);
+
+    return VideoParallax;
+}(_BaseParallax2.default);
+
+exports.default = VideoParallax;
+
+},{"../utility/UsesFunction":18,"./BaseParallax":1,"promise":9}],6:[function(require,module,exports){
 (function (global){
 /**
  * Created by Abaddon on 22.08.2016.
@@ -11,13 +897,29 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ParallaxBox = require("./utility/ParallaxBox");
+var _ParallaxBox = require("./components/ParallaxBox");
 
 var _ParallaxBox2 = _interopRequireDefault(_ParallaxBox);
 
-var _ImageParallax = require("./utility/ImageParallax");
+var _UsesFunction = require("./utility/UsesFunction");
+
+var _UsesFunction2 = _interopRequireDefault(_UsesFunction);
+
+var _SmoothScroll = require("./utility/SmoothScroll");
+
+var _SmoothScroll2 = _interopRequireDefault(_SmoothScroll);
+
+var _ImageParallax = require("./components/ImageParallax");
 
 var _ImageParallax2 = _interopRequireDefault(_ImageParallax);
+
+var _VideoParallax = require("./components/VideoParallax");
+
+var _VideoParallax2 = _interopRequireDefault(_VideoParallax);
+
+var _ContentParallax = require("./components/ContentParallax");
+
+var _ContentParallax2 = _interopRequireDefault(_ContentParallax);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27,6 +929,9 @@ var NoJqueryParallax = function () {
     function NoJqueryParallax(options) {
         _classCallCheck(this, NoJqueryParallax);
 
+        this.parallaxInstances = [];
+        this.smooth = null;
+        this.resizeDelay = null;
         //Set plugin options
         this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
@@ -50,18 +955,27 @@ var NoJqueryParallax = function () {
 
             setTimeout(function () {
                 for (var i = 0; i < ln; i++) {
-                    var item = new _ParallaxBox2.default(_this.sections[i], _this.config.bg);
+                    var item = new _ParallaxBox2.default(_this.sections[i], _this.config.bg),
+                        instance = null;
                     switch (item.getSourceType()) {
                         case "image":
-                            new _ImageParallax2.default(item).start();
+                            instance = new _ImageParallax2.default(item);
                             break;
                         case "video":
-                            //Для видео
+                            instance = new _VideoParallax2.default(item);
+                            break;
+                        case "content":
+                            instance = new _ContentParallax2.default(item);
                             break;
                         default:
-
+                    }
+                    if (instance) {
+                        instance.start();
+                        _this.parallaxInstances.push(instance);
                     }
                 }
+                //Bind events
+                _this._subscribe();
             }, 500);
         }
 
@@ -72,6 +986,72 @@ var NoJqueryParallax = function () {
          * @returns {*}
          */
 
+    }, {
+        key: "_subscribe",
+
+
+        /**
+         * Subscribe plugin for window events
+         * @private
+         */
+        value: function _subscribe() {
+            //Smooth scroll
+            this.smooth = new _SmoothScroll2.default();
+            this.smooth.run();
+            //Scroll window
+            if (!_UsesFunction2.default.isLiteMode()) {
+                this.scFn = this._scrollTic.bind(this);
+                window.addEventListener("scroll", this.scFn, false);
+            }
+            //Resize window
+            this.rezFn = this._resizeTic.bind(this);
+            window.addEventListener("resize", this.rezFn, false);
+        }
+
+        /**
+         * Call handlers for scroll
+         * @private
+         */
+
+    }, {
+        key: "_scrollTic",
+        value: function _scrollTic() {
+            var ln = this.parallaxInstances.length;
+            for (var i = 0; i < ln; i++) {
+                this.parallaxInstances[i].scrollTick();
+            }
+        }
+
+        /**
+         * Call handlers when window change sizes
+         * @private
+         */
+
+    }, {
+        key: "_resizeTic",
+        value: function _resizeTic() {
+            var _this2 = this;
+
+            var ln = this.parallaxInstances.length;
+            clearTimeout(this.resizeDelay);
+            this.resizeDelay = setTimeout(function () {
+                for (var i = 0; i < ln; i++) {
+                    _this2.parallaxInstances[i].resizeTick();
+                }
+                _this2.smooth.resizeTick();
+            }, 500);
+        }
+
+        /**
+         * Remove event handlers
+         */
+
+    }, {
+        key: "stop",
+        value: function stop() {
+            window.removeEventListener("scroll", this.scFn, false);
+            window.removeEventListener("resize", this.rezFn, false);
+        }
     }], [{
         key: "merge",
         value: function merge(self, source) {
@@ -92,7 +1072,7 @@ global.NoJqueryParallax = NoJqueryParallax;
 exports.default = NoJqueryParallax;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./utility/ImageParallax":13,"./utility/ParallaxBox":14}],2:[function(require,module,exports){
+},{"./components/ContentParallax":2,"./components/ImageParallax":3,"./components/ParallaxBox":4,"./components/VideoParallax":5,"./utility/SmoothScroll":17,"./utility/UsesFunction":18}],7:[function(require,module,exports){
 "use strict";
 
 // rawAsap provides everything we need except exception management.
@@ -160,7 +1140,7 @@ RawTask.prototype.call = function () {
     }
 };
 
-},{"./raw":3}],3:[function(require,module,exports){
+},{"./raw":8}],8:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -384,12 +1364,12 @@ rawAsap.makeRequestCallFromTimer = makeRequestCallFromTimer;
 // https://github.com/tildeio/rsvp.js/blob/cddf7232546a9cf858524b75cde6f9edf72620a7/lib/rsvp/asap.js
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./lib')
 
-},{"./lib":9}],5:[function(require,module,exports){
+},{"./lib":14}],10:[function(require,module,exports){
 'use strict';
 
 var asap = require('asap/raw');
@@ -604,7 +1584,7 @@ function doResolve(fn, promise) {
   }
 }
 
-},{"asap/raw":3}],6:[function(require,module,exports){
+},{"asap/raw":8}],11:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -619,7 +1599,7 @@ Promise.prototype.done = function (onFulfilled, onRejected) {
   });
 };
 
-},{"./core.js":5}],7:[function(require,module,exports){
+},{"./core.js":10}],12:[function(require,module,exports){
 'use strict';
 
 //This file contains the ES6 extensions to the core Promises/A+ API
@@ -728,7 +1708,7 @@ Promise.prototype['catch'] = function (onRejected) {
   return this.then(null, onRejected);
 };
 
-},{"./core.js":5}],8:[function(require,module,exports){
+},{"./core.js":10}],13:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -746,7 +1726,7 @@ Promise.prototype['finally'] = function (f) {
   });
 };
 
-},{"./core.js":5}],9:[function(require,module,exports){
+},{"./core.js":10}],14:[function(require,module,exports){
 'use strict';
 
 module.exports = require('./core.js');
@@ -756,7 +1736,7 @@ require('./es6-extensions.js');
 require('./node-extensions.js');
 require('./synchronous.js');
 
-},{"./core.js":5,"./done.js":6,"./es6-extensions.js":7,"./finally.js":8,"./node-extensions.js":10,"./synchronous.js":11}],10:[function(require,module,exports){
+},{"./core.js":10,"./done.js":11,"./es6-extensions.js":12,"./finally.js":13,"./node-extensions.js":15,"./synchronous.js":16}],15:[function(require,module,exports){
 'use strict';
 
 // This file contains then/promise specific extensions that are only useful
@@ -888,7 +1868,7 @@ Promise.prototype.nodeify = function (callback, ctx) {
   });
 }
 
-},{"./core.js":5,"asap":2}],11:[function(require,module,exports){
+},{"./core.js":10,"asap":7}],16:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./core.js');
@@ -952,7 +1932,7 @@ Promise.disableSynchronous = function() {
   Promise.prototype.getState = undefined;
 };
 
-},{"./core.js":5}],12:[function(require,module,exports){
+},{"./core.js":10}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -960,356 +1940,214 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by Abaddon on 23.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by Abaddon on 29.08.2016.
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
+var _UsesFunction = require("./UsesFunction");
+
+var _UsesFunction2 = _interopRequireDefault(_UsesFunction);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var SmoothScroll = function () {
+    function SmoothScroll() {
+        _classCallCheck(this, SmoothScroll);
+
+        this.handler = null;
+        this.targetY = 0;
+        this.oldY = 0;
+        this.currentY = 0;
+        this.minScrollTop = 0;
+        this.running = false;
+        this.vy = 0;
+        this.stepAmt = 1;
+        this.minMove = 0.1;
+        this.ts = 0.1;
+        this.fricton = 0.97;
+        this.direction = null;
+        this.maxScrollTop = 0;
+
+        window.requestAnimFrame = function () {
+            return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+        }();
+    }
+
+    /**
+     * Run
+     */
+
+
+    _createClass(SmoothScroll, [{
+        key: "run",
+        value: function run() {
+            if (!('ontouchstart' in window)) {
+                this.handler = this.wheel.bind(this);
+                document.documentElement.addEventListener("wheel", this.handler, false);
+
+                this.targetY = this.oldY = window.pageYOffset || document.documentElement.scrollTop;
+                this.currentY = -this.targetY;
+                this.minScrollTop = this.getMinScrollTop();
+                this.running = true;
+                this.animateTick();
+            }
+        }
+
+        /**
+         * Resize window handler
+         */
+
+    }, {
+        key: "resizeTick",
+        value: function resizeTick() {
+            this.minScrollTop = this.getMinScrollTop();
+        }
+
+        /**
+         * Wheel handler
+         */
+
+    }, {
+        key: "wheel",
+        value: function wheel(evt) {
+            evt.preventDefault();
+            var wheelDelta = evt.wheelDelta;
+            console.log(evt.wheelDelta + '||' + evt.deltaY);
+
+            var delta = evt.detail ? evt.detail * -1 : wheelDelta / 40,
+                dir = delta < 0 ? -1 : 1;
+            if (dir != this.direction) {
+                this.vy = 0;
+                this.direction = dir;
+            }
+
+            this.currentY = -(window.pageYOffset || document.documentElement.scrollTop);
+            this.updateScrollTarget(delta);
+        }
+
+        /**
+         * Get min scroll
+         * @returns {number}
+         */
+
+    }, {
+        key: "getMinScrollTop",
+        value: function getMinScrollTop() {
+            return Math.max(document.body.clientHeight, document.documentElement.clientHeight) - _UsesFunction2.default.getScrollHeight();
+        }
+
+        /**
+         * Animate handler
+         */
+
+    }, {
+        key: "animateTick",
+        value: function animateTick() {
+            if (!this.running) return;
+            requestAnimationFrame(this.animateTick.bind(this));
+            this.render();
+        }
+
+        /**
+         * Update scroll position
+         * @param delta
+         */
+
+    }, {
+        key: "updateScrollTarget",
+        value: function updateScrollTarget(delta) {
+            this.targetY += delta;
+            this.vy += (this.targetY - this.oldY) * this.stepAmt;
+            this.oldY = this.targetY;
+        }
+
+        /**
+         * Render scroll
+         */
+
+    }, {
+        key: "render",
+        value: function render() {
+            if (this.vy < -this.minMove || this.vy > this.minMove) {
+                this.currentY = this.currentY + this.vy;
+                if (this.currentY > this.maxScrollTop) {
+                    this.currentY = this.vy = 0;
+                } else if (this.currentY < this.minScrollTop) {
+                    this.vy = 0;
+                    this.currentY = this.minScrollTop;
+                }
+
+                window.scrollTo(0, -this.currentY);
+                this.vy *= this.fricton;
+            }
+        }
+    }]);
+
+    return SmoothScroll;
+}();
+
+exports.default = SmoothScroll;
+
+},{"./UsesFunction":18}],18:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 require("./device");
 
-var _promise = require("promise");
-
-var _promise2 = _interopRequireDefault(_promise);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var BaseParallax = function () {
-    function BaseParallax(box) {
-        _classCallCheck(this, BaseParallax);
-
-        this.box = box;
-    }
-
+exports.default = {
     /**
-     * Start parallax
+     * Return ie version
+     * @returns {number}
      */
+    ieVersion: function ieVersion() {
+        var rv = -1;
+        if (navigator.appName == 'Microsoft Internet Explorer') {
+            var ua = navigator.userAgent,
+                re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
 
+            if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
+        } else if (navigator.appName == 'Netscape') {
+            var _ua = navigator.userAgent,
+                _re = new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})");
 
-    _createClass(BaseParallax, [{
-        key: "start",
-        value: function start() {
-            this.setViewProps();
+            if (_re.exec(_ua) != null) rv = parseFloat(RegExp.$1);
         }
-
-        /**
-         * Load source for block
-         */
-
-    }, {
-        key: "load",
-        value: function load() {}
-
-        /**
-         * Check parallax mode
-         * @returns {boolean}
-         */
-
-    }, {
-        key: "setViewProps",
-
-
-        /**
-         * Set window properties
-         */
-        value: function setViewProps() {
-            this.view = Object.defineProperties({}, {
-                w: {
-                    value: window
-                },
-                d: {
-                    value: document
-                },
-                element: {
-                    set: function set(value) {
-                        this._element = value;
-                        this.width = this.element.offsetWidth;
-                        this.height = this.element.offsetHeight;
-                    },
-                    get: function get() {
-                        return this._element;
-                    }
-                }
-            });
-            this.view.element = this.view.d.documentElement;
-        }
-    }], [{
-        key: "isLiteMode",
-        value: function isLiteMode() {
-            return !(!device.mobile() && !device.tablet());
-        }
-    }]);
-
-    return BaseParallax;
-}();
-
-exports.default = BaseParallax;
-
-},{"./device":15,"promise":4}],13:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _BaseParallax = require("./BaseParallax");
-
-var _BaseParallax2 = _interopRequireDefault(_BaseParallax);
-
-var _promise = require("promise");
-
-var _promise2 = _interopRequireDefault(_promise);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * Created by Abaddon on 23.08.2016.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
-
-
-var ImageParallax = function (_Base) {
-    _inherits(ImageParallax, _Base);
-
-    function ImageParallax(box) {
-        _classCallCheck(this, ImageParallax);
-
-        return _possibleConstructorReturn(this, Object.getPrototypeOf(ImageParallax).call(this, box));
-    }
-
+        return rv;
+    },
     /**
-     * Start parallax
+     * Check parallax mode
+     * @returns {boolean}
      */
-
-
-    _createClass(ImageParallax, [{
-        key: "start",
-        value: function start() {
-            var _this2 = this;
-
-            _get(Object.getPrototypeOf(ImageParallax.prototype), "start", this).call(this);
-            this.load().then(function () {
-                _this2.setBlock();
-            }, function () {
-                console.error("Source load error!");
-            });
-        }
-
-        /**
-         * Load background image
-         */
-
-    }, {
-        key: "load",
-        value: function load() {
-            return new _promise2.default(function (resolve, reject) {
-                var _this3 = this;
-
-                var img = this.createImage();
-                img.onload = function () {
-                    _this3.box.setOricSizes({ width: img.width, height: img.height });
-                    _this3.setInner();
-                    resolve();
-                };
-                img.onerror = function () {
-                    reject();
-                };
-            }.bind(this));
-        }
-
-        /**
-         * Create and return image object
-         * @returns {*}
-         */
-
-    }, {
-        key: "createImage",
-        value: function createImage() {
-            var img = new Image();
-            img.src = this.box.getUrl();
-            return img;
-        }
-
-        /**
-         * Create inner structure
-         */
-
-    }, {
-        key: "setInner",
-        value: function setInner() {
-            if (!_BaseParallax2.default.isLiteMode()) {
-                this.box.getItem().innerHTML = "<div class='parallax-bg-inner'></div>";
-                this.box.getInner().style.cssText += "background-image: url(" + this.box.getUrl() + ");";
-            } else {
-                this.box.getItem().innerHTML = "<img class='parallax-bg-inner' src='" + this.box.getUrl() + "' alt=''/>";
-                this.box.setRatio('none');
-            }
-        }
-
-        /**
-         * Calc and set sizes for block
-         */
-
-    }, {
-        key: "setBlock",
-        value: function setBlock() {}
-    }]);
-
-    return ImageParallax;
-}(_BaseParallax2.default);
-
-exports.default = ImageParallax;
-
-},{"./BaseParallax":12,"promise":4}],14:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Created by Abaddon on 23.08.2016.
- */
-var ParallaxBox = function () {
-    function ParallaxBox(box, selector) {
-        _classCallCheck(this, ParallaxBox);
-
-        this.el = box.querySelector(selector);
-        this.box = box;
-        this.parallax = true;
-        this.invert = Boolean(this.el.getAttribute("data-invert"));
-        this.sourceType = this.el.getAttribute("data-parallax-type");
-        this.speed = this.el.getAttribute("data-speed");
-        this.url = this.el.getAttribute("data-img-url");
-        this.type = "none";
-        this.resize = true;
-        this.baseHeight = 0;
+    isLiteMode: function isLiteMode() {
+        return !(!device.mobile() && !device.tablet());
+    },
+    /**
+     * Is safary
+     * @returns {boolean}
+     */
+    isSafari: function isSafari() {
+        var safari = false;
+        if (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0) safari = true;
+        return safari;
+    },
+    /**
+     * Get window height with scroll
+     */
+    getScrollHeight: function getScrollHeight() {
+        return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
     }
+}; /**
+    * Created by Abaddon on 28.08.2016.
+    */
 
-    _createClass(ParallaxBox, [{
-        key: "setBaseHeight",
-        value: function setBaseHeight(value) {
-            this.baseHeight = value;
-        }
-    }, {
-        key: "getBaseHeight",
-        value: function getBaseHeight() {
-            return this.baseHeight;
-        }
-    }, {
-        key: "setResize",
-        value: function setResize(value) {
-            this.resize = value;
-        }
-    }, {
-        key: "isResize",
-        value: function isResize() {
-            return this.resize;
-        }
-    }, {
-        key: "setType",
-        value: function setType(value) {
-            this.type = value;
-        }
-    }, {
-        key: "getType",
-        value: function getType() {
-            return this.type;
-        }
-    }, {
-        key: "getItem",
-        value: function getItem() {
-            return this.el;
-        }
-    }, {
-        key: "getInner",
-        value: function getInner() {
-            if (this.inner) {
-                return this.inner;
-            } else {
-                this.inner = this.el.querySelector(".parallax-bg-inner");
-                return this.inner;
-            }
-        }
-    }, {
-        key: "setInvert",
-        value: function setInvert(value) {
-            if (value === "true") {
-                this.type = "invert";
-            } else {
-                this.type = "normal";
-            }
-            this.invert = value;
-        }
-    }, {
-        key: "isInvert",
-        value: function isInvert() {
-            return this.invert === "true";
-        }
-    }, {
-        key: "getSpeed",
-        value: function getSpeed() {
-            return this.speed;
-        }
-    }, {
-        key: "setRatio",
-        value: function setRatio(value) {
-            this.bufferRatio = value;
-        }
-    }, {
-        key: "getRatio",
-        value: function getRatio() {
-            return this.bufferRatio;
-        }
-    }, {
-        key: "getSourceType",
-        value: function getSourceType() {
-            return this.sourceType;
-        }
-    }, {
-        key: "setParallax",
-        value: function setParallax(value) {
-            this.parallax = value;
-        }
-    }, {
-        key: "isParallax",
-        value: function isParallax() {
-            return this.parallax;
-        }
-    }, {
-        key: "getUrl",
-        value: function getUrl() {
-            return this.url;
-        }
-    }, {
-        key: "setOricSizes",
-        value: function setOricSizes(value) {
-            this.sizes = value;
-        }
-    }, {
-        key: "getOricSizes",
-        value: function getOricSizes() {
-            return this.sizes;
-        }
-    }]);
-
-    return ParallaxBox;
-}();
-
-exports.default = ParallaxBox;
-
-},{}],15:[function(require,module,exports){
+},{"./device":19}],19:[function(require,module,exports){
 "use strict";
 
 /*! device.js 0.1.58 */
@@ -1373,4 +2211,4 @@ exports.default = ParallaxBox;
     }, i = "onorientationchange" in window, g = i ? "orientationchange" : "resize", window.addEventListener ? window.addEventListener(g, e, !1) : window.attachEvent ? window.attachEvent(g, e) : window[g] = e, e();
 }).call(undefined);
 
-},{}]},{},[1]);
+},{}]},{},[6]);

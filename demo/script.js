@@ -4,6 +4,9 @@
 "use strict";
 (function (d, w) {
     $('.flexslider').flexslider();
-    var parallax = new NoJqueryParallax();
+    var parallax = new NoJqueryParallax({
+        smooth: true
+    });
     parallax.run();
-}(document, window)); 
+    // parallax.stopSmooth();
+}(document, window));

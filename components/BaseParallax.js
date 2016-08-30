@@ -16,25 +16,7 @@ class BaseParallax {
      * Set window properties
      */
     setViewProps() {
-        this.view = Object.defineProperties({}, {
-            w: {
-                value: window
-            },
-            d: {
-                value: document
-            },
-            element: {
-                set: function (value) {
-                    this._element = value;
-                    this.width = this.element.offsetWidth;
-                    this.height = this.element.clientHeight;
-                },
-                get: function () {
-                    return this._element;
-                }
-            }
-        });
-        this.view.element = this.view.d.documentElement;
+        this.view = Uses.getView();
     }
 
     /**

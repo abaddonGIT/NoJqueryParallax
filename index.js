@@ -9,15 +9,16 @@ import ImageParallax from "./components/ImageParallax";
 import VideoParallax from "./components/VideoParallax";
 import ContentParallax from "./components/ContentParallax";
 
-class NoJqueryParallax { 
+class NoJqueryParallax {
     constructor(options) {
         this.parallaxInstances = [];
-        this.smooth = null;
+        this.smooth = {};
         this.resizeDelay = null;
         //Set plugin options
         this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
-            bg: ".js-parallax-bg"
+            bg: ".js-parallax-bg",
+            smooth: true
         }, options);
     }
 
@@ -75,8 +76,10 @@ class NoJqueryParallax {
      */
     _subscribe() {
         //Smooth scroll
-        this.smooth = new SmoothScroll();
-        this.smooth.run();
+        if (this.config.smooth) {
+            this.smooth = new SmoothScroll();
+            this.smooth.run();
+        }
         //Scroll window
         if (!Uses.isLiteMode()) {
             this.scFn = this._scrollTic.bind(this);
@@ -119,6 +122,13 @@ class NoJqueryParallax {
     stop() {
         window.removeEventListener("scroll", this.scFn, false);
         window.removeEventListener("resize", this.rezFn, false);
+    }
+
+    /**
+     * Stop smooth scrolling
+     */
+    stopSmooth() {
+        this.smooth.stop();
     }
 }
 

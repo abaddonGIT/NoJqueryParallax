@@ -44,25 +44,7 @@ var BaseParallax = function () {
     }, {
         key: "setViewProps",
         value: function setViewProps() {
-            this.view = Object.defineProperties({}, {
-                w: {
-                    value: window
-                },
-                d: {
-                    value: document
-                },
-                element: {
-                    set: function set(value) {
-                        this._element = value;
-                        this.width = this.element.offsetWidth;
-                        this.height = this.element.clientHeight;
-                    },
-                    get: function get() {
-                        return this._element;
-                    }
-                }
-            });
-            this.view.element = this.view.d.documentElement;
+            this.view = _UsesFunction2.default.getView();
         }
 
         /**
@@ -930,12 +912,13 @@ var NoJqueryParallax = function () {
         _classCallCheck(this, NoJqueryParallax);
 
         this.parallaxInstances = [];
-        this.smooth = null;
+        this.smooth = {};
         this.resizeDelay = null;
         //Set plugin options
         this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
-            bg: ".js-parallax-bg"
+            bg: ".js-parallax-bg",
+            smooth: true
         }, options);
     }
 
@@ -996,8 +979,10 @@ var NoJqueryParallax = function () {
          */
         value: function _subscribe() {
             //Smooth scroll
-            this.smooth = new _SmoothScroll2.default();
-            this.smooth.run();
+            if (this.config.smooth) {
+                this.smooth = new _SmoothScroll2.default();
+                this.smooth.run();
+            }
             //Scroll window
             if (!_UsesFunction2.default.isLiteMode()) {
                 this.scFn = this._scrollTic.bind(this);
@@ -1051,6 +1036,16 @@ var NoJqueryParallax = function () {
         value: function stop() {
             window.removeEventListener("scroll", this.scFn, false);
             window.removeEventListener("resize", this.rezFn, false);
+        }
+
+        /**
+         * Stop smooth scrolling
+         */
+
+    }, {
+        key: "stopSmooth",
+        value: function stopSmooth() {
+            this.smooth.stop();
         }
     }], [{
         key: "merge",
@@ -1965,7 +1960,6 @@ var SmoothScroll = function () {
         this.vy = 0;
         this.stepAmt = 1;
         this.minMove = 0.1;
-        this.ts = 0.1;
         this.fricton = 0.97;
         this.direction = null;
         this.maxScrollTop = 0;
@@ -1985,16 +1979,29 @@ var SmoothScroll = function () {
     _createClass(SmoothScroll, [{
         key: "run",
         value: function run() {
-            if (!('ontouchstart' in window)) {
+            if (!_UsesFunction2.default.isLiteMode()) {
                 this.handler = this.wheel.bind(this);
-                document.documentElement.addEventListener("wheel", this.handler, false);
+                _UsesFunction2.default.getView().element.addEventListener("mousewheel", this.handler, false);
+                _UsesFunction2.default.getView().element.addEventListener("DOMMouseScroll", this.handler, false);
 
-                this.targetY = this.oldY = window.pageYOffset || document.documentElement.scrollTop;
+                this.targetY = this.oldY = window.pageYOffset || _UsesFunction2.default.getView().element.scrollTop;
                 this.currentY = -this.targetY;
                 this.minScrollTop = this.getMinScrollTop();
                 this.running = true;
                 this.animateTick();
             }
+        }
+
+        /**
+         * Stop smooth scrolling
+         */
+
+    }, {
+        key: "stop",
+        value: function stop() {
+            _UsesFunction2.default.getView().element.removeEventListener("mousewheel", this.handler, false);
+            _UsesFunction2.default.getView().element.removeEventListener("DOMMouseScroll", this.handler, false);
+            this.running = false;
         }
 
         /**
@@ -2016,8 +2023,6 @@ var SmoothScroll = function () {
         value: function wheel(evt) {
             evt.preventDefault();
             var wheelDelta = evt.wheelDelta;
-            console.log(evt.wheelDelta + '||' + evt.deltaY);
-
             var delta = evt.detail ? evt.detail * -1 : wheelDelta / 40,
                 dir = delta < 0 ? -1 : 1;
             if (dir != this.direction) {
@@ -2025,7 +2030,7 @@ var SmoothScroll = function () {
                 this.direction = dir;
             }
 
-            this.currentY = -(window.pageYOffset || document.documentElement.scrollTop);
+            this.currentY = -(window.pageYOffset || _UsesFunction2.default.getView().element.scrollTop);
             this.updateScrollTarget(delta);
         }
 
@@ -2037,7 +2042,7 @@ var SmoothScroll = function () {
     }, {
         key: "getMinScrollTop",
         value: function getMinScrollTop() {
-            return Math.max(document.body.clientHeight, document.documentElement.clientHeight) - _UsesFunction2.default.getScrollHeight();
+            return Math.max(_UsesFunction2.default.getView().body.clientHeight, _UsesFunction2.default.getView().element.clientHeight) - _UsesFunction2.default.getScrollHeight();
         }
 
         /**
@@ -2048,7 +2053,7 @@ var SmoothScroll = function () {
         key: "animateTick",
         value: function animateTick() {
             if (!this.running) return;
-            requestAnimationFrame(this.animateTick.bind(this));
+            requestAnimFrame(this.animateTick.bind(this));
             this.render();
         }
 
@@ -2099,53 +2104,116 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by Abaddon on 28.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
 require("./device");
 
-exports.default = {
-    /**
-     * Return ie version
-     * @returns {number}
-     */
-    ieVersion: function ieVersion() {
-        var rv = -1;
-        if (navigator.appName == 'Microsoft Internet Explorer') {
-            var ua = navigator.userAgent,
-                re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-            if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
-        } else if (navigator.appName == 'Netscape') {
-            var _ua = navigator.userAgent,
-                _re = new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})");
+var UsesFunction = function () {
+    function UsesFunction() {
+        _classCallCheck(this, UsesFunction);
 
-            if (_re.exec(_ua) != null) rv = parseFloat(RegExp.$1);
-        }
-        return rv;
-    },
-    /**
-     * Check parallax mode
-     * @returns {boolean}
-     */
-    isLiteMode: function isLiteMode() {
-        return !(!device.mobile() && !device.tablet());
-    },
-    /**
-     * Is safary
-     * @returns {boolean}
-     */
-    isSafari: function isSafari() {
-        var safari = false;
-        if (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0) safari = true;
-        return safari;
-    },
-    /**
-     * Get window height with scroll
-     */
-    getScrollHeight: function getScrollHeight() {
-        return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
+        this.view = Object.defineProperties({}, {
+            w: {
+                value: window
+            },
+            d: {
+                value: document
+            },
+            element: {
+                set: function set(value) {
+                    this._element = value;
+                    this.width = this.element.offsetWidth;
+                    this.height = this.element.clientHeight;
+                },
+                get: function get() {
+                    return this._element;
+                }
+            }
+        });
+        this.view.element = this.view.d.documentElement;
+        this.view.body = this.view.d.body;
     }
-}; /**
-    * Created by Abaddon on 28.08.2016.
-    */
+
+    /**
+     * Return current page view
+     * @returns {Object|*}
+     */
+
+
+    _createClass(UsesFunction, [{
+        key: "getView",
+        value: function getView() {
+            return this.view;
+        }
+
+        /**
+         * Return ie version
+         * @returns {number}
+         */
+
+    }, {
+        key: "ieVersion",
+        value: function ieVersion() {
+            var rv = -1;
+            if (navigator.appName == 'Microsoft Internet Explorer') {
+                var ua = navigator.userAgent,
+                    re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+
+                if (re.exec(ua) != null) rv = parseFloat(RegExp.$1);
+            } else if (navigator.appName == 'Netscape') {
+                var _ua = navigator.userAgent,
+                    _re = new RegExp("Trident/.*rv:([0-9]{1,}[\.0-9]{0,})");
+
+                if (_re.exec(_ua) != null) rv = parseFloat(RegExp.$1);
+            }
+            return rv;
+        }
+
+        /**
+         * Check parallax mode
+         * @returns {boolean}
+         */
+
+    }, {
+        key: "isLiteMode",
+        value: function isLiteMode() {
+            return !(!device.mobile() && !device.tablet());
+        }
+
+        /**
+         * Is safary
+         * @returns {boolean}
+         */
+
+    }, {
+        key: "isSafari",
+        value: function isSafari() {
+            var safari = false;
+            if (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0) safari = true;
+            return safari;
+        }
+
+        /**
+         * Get window height with scroll
+         */
+
+    }, {
+        key: "getScrollHeight",
+        value: function getScrollHeight() {
+            var view = this.getView();
+            return Math.max(view.body.scrollHeight, view.element.scrollHeight, view.body.offsetHeight, view.element.offsetHeight, view.body.clientHeight, view.element.clientHeight);
+        }
+    }]);
+
+    return UsesFunction;
+}();
+
+exports.default = new UsesFunction();
 
 },{"./device":19}],19:[function(require,module,exports){
 "use strict";

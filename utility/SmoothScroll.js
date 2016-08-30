@@ -14,7 +14,6 @@ class SmoothScroll {
         this.vy = 0;
         this.stepAmt = 1;
         this.minMove = 0.1;
-        this.ts = 0.1;
         this.fricton = 0.97;
         this.direction = null;
         this.maxScrollTop = 0;
@@ -35,16 +34,26 @@ class SmoothScroll {
      * Run
      */
     run() {
-        if (!('ontouchstart' in window)) {
+        if (!Uses.isLiteMode()) {
             this.handler = this.wheel.bind(this);
-            document.documentElement.addEventListener("wheel", this.handler, false);
+            Uses.getView().element.addEventListener("mousewheel", this.handler, false);
+            Uses.getView().element.addEventListener("DOMMouseScroll", this.handler, false);
 
-            this.targetY = this.oldY = window.pageYOffset || document.documentElement.scrollTop;
+            this.targetY = this.oldY = window.pageYOffset || Uses.getView().element.scrollTop;
             this.currentY = -this.targetY;
             this.minScrollTop = this.getMinScrollTop();
             this.running = true;
             this.animateTick();
         }
+    }
+
+    /**
+     * Stop smooth scrolling
+     */
+    stop() {
+        Uses.getView().element.removeEventListener("mousewheel", this.handler, false);
+        Uses.getView().element.removeEventListener("DOMMouseScroll", this.handler, false);
+        this.running = false;
     }
 
     /**
@@ -60,8 +69,6 @@ class SmoothScroll {
     wheel(evt) {
         evt.preventDefault();
         let wheelDelta = evt.wheelDelta;
-        console.log(evt.wheelDelta + '||' + evt.deltaY);
-
         let delta = evt.detail ? evt.detail * -1 : wheelDelta / 40,
             dir = delta < 0 ? -1 : 1;
         if (dir != this.direction) {
@@ -69,7 +76,7 @@ class SmoothScroll {
             this.direction = dir;
         }
 
-        this.currentY = -(window.pageYOffset || document.documentElement.scrollTop);
+        this.currentY = -(window.pageYOffset || Uses.getView().element.scrollTop);
         this.updateScrollTarget(delta);
     }
 
@@ -78,7 +85,7 @@ class SmoothScroll {
      * @returns {number}
      */
     getMinScrollTop() {
-        return Math.max(document.body.clientHeight, document.documentElement.clientHeight) - Uses.getScrollHeight();
+        return Math.max(Uses.getView().body.clientHeight, Uses.getView().element.clientHeight) - Uses.getScrollHeight();
     }
 
     /**
@@ -86,7 +93,7 @@ class SmoothScroll {
      */
     animateTick() {
         if (!this.running) return;
-        requestAnimationFrame(this.animateTick.bind(this));
+        requestAnimFrame(this.animateTick.bind(this));
         this.render();
     }
 

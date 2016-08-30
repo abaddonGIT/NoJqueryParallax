@@ -3,12 +3,43 @@
  */
 import "./device";
 
-export default {
+class UsesFunction {
+    constructor() {
+        this.view = Object.defineProperties({}, {
+            w: {
+                value: window
+            },
+            d: {
+                value: document
+            },
+            element: {
+                set: function (value) {
+                    this._element = value;
+                    this.width = this.element.offsetWidth;
+                    this.height = this.element.clientHeight;
+                },
+                get: function () {
+                    return this._element;
+                }
+            }
+        });
+        this.view.element = this.view.d.documentElement;
+        this.view.body = this.view.d.body;
+    }
+
+    /**
+     * Return current page view
+     * @returns {Object|*}
+     */
+    getView() {
+        return this.view;
+    }
+
     /**
      * Return ie version
      * @returns {number}
      */
-    ieVersion: function () {
+    ieVersion() {
         let rv = -1;
         if (navigator.appName == 'Microsoft Internet Explorer') {
             let ua = navigator.userAgent,
@@ -25,29 +56,35 @@ export default {
                 rv = parseFloat(RegExp.$1);
         }
         return rv;
-    },
+    }
+
     /**
      * Check parallax mode
      * @returns {boolean}
      */
-    isLiteMode: function () {
+    isLiteMode() {
         return !(!device.mobile() && !device.tablet());
-    },
+    }
+
     /**
      * Is safary
      * @returns {boolean}
      */
-    isSafari: function () {
+    isSafari() {
         var safari = false;
         if (navigator.userAgent.search("Safari") >= 0 && navigator.userAgent.search("Chrome") < 0) safari = true;
         return safari;
-    },
+    }
+
     /**
      * Get window height with scroll
      */
     getScrollHeight() {
-        return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight,
-            document.body.offsetHeight, document.documentElement.offsetHeight,
-            document.body.clientHeight, document.documentElement.clientHeight);
+        let view = this.getView();
+        return Math.max(view.body.scrollHeight, view.element.scrollHeight,
+            view.body.offsetHeight, view.element.offsetHeight,
+            view.body.clientHeight, view.element.clientHeight);
     }
 }
+
+export default new UsesFunction();

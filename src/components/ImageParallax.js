@@ -14,10 +14,10 @@ class ImageParallax extends Base {
      */
     start() {
         super.start();
-        this.loadImg().then(() => {
+        this.loadImg(function () {
             this.setBlock();
         }, function () {
-            console.error("Image source load error!");
+            console.error("Source load error!");
         });
     }
 

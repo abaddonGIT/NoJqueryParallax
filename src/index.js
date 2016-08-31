@@ -4,7 +4,7 @@
 "use strict";
 import Item from "./components/ParallaxBox";
 import Uses from "./utility/UsesFunction";
-import SmoothScroll from "./utility/SmoothScroll";
+import SmoothScroll from "./components/SmoothScroll";
 import ImageParallax from "./components/ImageParallax";
 import VideoParallax from "./components/VideoParallax";
 import ContentParallax from "./components/ContentParallax";
@@ -13,12 +13,14 @@ class NoJqueryParallax {
     constructor(options) {
         this.parallaxInstances = [];
         this.smooth = {};
+        this.observer = {};
         this.resizeDelay = null;
         //Set plugin options
         this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
             bg: ".js-parallax-bg",
-            smooth: true
+            smooth: true,
+            observe: true
         }, options);
     }
 
@@ -30,29 +32,27 @@ class NoJqueryParallax {
         let ln = this.sections.length;
         if (!ln) return false;
 
-        setTimeout(() => {
-            for (let i = 0; i < ln; i++) {
-                let item = new Item(this.sections[i], this.config.bg), instance = null;
-                switch (item.getSourceType()) {
-                    case "image":
-                        instance = new ImageParallax(item);
-                        break;
-                    case "video":
-                        instance = new VideoParallax(item);
-                        break;
-                    case "content":
-                        instance = new ContentParallax(item);
-                        break;
-                    default:
-                }
-                if (instance) {
-                    instance.start();
-                    this.parallaxInstances.push(instance);
-                }
+        for (let i = 0; i < ln; i++) {
+            let item = new Item(this.sections[i], this.config.bg), instance = null;
+            switch (item.getSourceType()) {
+                case "image":
+                    instance = new ImageParallax(item);
+                    break;
+                case "video":
+                    instance = new VideoParallax(item);
+                    break;
+                case "content":
+                    instance = new ContentParallax(item);
+                    break;
+                default:
             }
-            //Bind events
-            this._subscribe();
-        }, 500);
+            if (instance) {
+                instance.start();
+                this.parallaxInstances.push(instance);
+            }
+        }
+        //Bind events
+        this._subscribe();
     }
 
     /**
@@ -79,6 +79,10 @@ class NoJqueryParallax {
         if (this.config.smooth) {
             this.smooth = new SmoothScroll();
             this.smooth.run();
+            //Set dom observe
+            if (this.config.observe) {
+                this.setObserve();
+            }
         }
         //Scroll window
         if (!Uses.isLiteMode()) {
@@ -100,6 +104,36 @@ class NoJqueryParallax {
             this.parallaxInstances[i].scrollTick();
         }
     }
+
+    /**
+     * Set dom observe for rebuild smooth scroll
+     * @private
+     */
+    setObserve() {
+        try {
+            let self = this;
+            this.observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.type === "childList") {
+                        self.smooth.update();
+                    }
+                })
+            });
+
+            this.observer.observe(document.body, {
+                childList: true
+            });
+        } catch (e) {
+            console.warn("Your browser not supported MutationObserve!");
+        }
+    }
+
+    /**
+     * Stop document observer
+     */
+    stopObserve() {
+        this.observer.disconnect();
+    } 
 
     /**
      * Call handlers when window change sizes
@@ -131,7 +165,5 @@ class NoJqueryParallax {
         this.smooth.stop();
     }
 }
-
 global.NoJqueryParallax = NoJqueryParallax;
-
 export default NoJqueryParallax;

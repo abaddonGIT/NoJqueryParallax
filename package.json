@@ -27,8 +27,12 @@
     "babel-preset-es2015": "latest",
     "babel-preset-stage-0": "latest",
     "vinyl-source-stream": "latest",
-    "browserify": "latest",
-    "promise": "latest"
+    "gulp-uglify": "latest",
+    "gulp-filesize": "latest",
+    "gulp-header": "latest",
+    "gulp-gzip": "latest",
+    "gulp-rename": "latest",
+    "browserify": "latest"
   },
   "browserify": {
     "transform": [

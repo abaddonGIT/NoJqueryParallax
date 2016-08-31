@@ -1,7 +1,6 @@
 /**
  * Created by Abaddon on 23.08.2016.
  */
-import Promise from "promise";
 import Uses from "../utility/UsesFunction";
 
 class BaseParallax {
@@ -153,18 +152,16 @@ class BaseParallax {
     /**
      * Load background image
      */
-    loadImg() {
-        return new Promise(function (resolve, reject) {
-            let img = this.createImage();
-            img.onload = () => {
-                this.box.setOricSizes({width: img.width, height: img.height});
-                this.setInner();
-                resolve();
-            };
-            img.onerror = () => {
-                reject();
-            };
-        }.bind(this));
+    loadImg(resolve, reject) {
+        let img = this.createImage(), self = this;
+        img.onload = () => {
+            self.box.setOricSizes({width: img.width, height: img.height});
+            self.setInner();
+            resolve.call(this);
+        };
+        img.onerror = () => {
+            reject();
+        };
     }
 
     /**

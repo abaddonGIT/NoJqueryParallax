@@ -7,6 +7,16 @@
     var parallax = new NoJqueryParallax({
         smooth: true
     });
-    parallax.run();
-    // parallax.stopSmooth();
+    document.addEventListener("DOMContentLoaded", function () {
+        parallax.run();
+    });
+
+    document.querySelector("#add").addEventListener("click", function (e) {
+        let div = document.createElement("div");
+        div.innerHTML = '<div style="height: 300px; background-color: blue;"></div>';
+        document.querySelector("body").appendChild(div);
+        div = null;
+        e.preventDefault();
+        e.stopPropagation();
+    }, false);
 }(document, window));

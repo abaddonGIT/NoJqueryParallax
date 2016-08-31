@@ -1,7 +1,7 @@
 /**
  * Created by Abaddon on 29.08.2016.
  */
-import Uses from "./UsesFunction";
+import Uses from "../utility/UsesFunction";
 
 class SmoothScroll {
     constructor() {
@@ -54,6 +54,13 @@ class SmoothScroll {
         Uses.getView().element.removeEventListener("mousewheel", this.handler, false);
         Uses.getView().element.removeEventListener("DOMMouseScroll", this.handler, false);
         this.running = false;
+    }
+
+    /**
+     * Update min scroll height
+     */
+    update() {
+        this.minScrollTop = this.getMinScrollTop();
     }
 
     /**

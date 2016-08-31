@@ -1,7 +1,15 @@
 # NoJqueryParallax
 Create parallax effect without jquery
 
-## How to install
+## Browser compatibility
+- **Chrome**
+- **Firefox**
+- **Opera**
+- **Safari > 6**
+- **Yandex browser**
+- **IE >= 9**
+
+### How to install
     <script src="NoJqueryParallax.min.js"></script>
 ### How to use
 - **JS**

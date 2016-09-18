@@ -14,13 +14,15 @@ class NoJqueryParallax {
         this.parallaxInstances = [];
         this.smooth = {};
         this.observer = {};
-        this.resizeDelay = null;
+        this.resizeDelay = null; 
         //Set plugin options
         this.config = NoJqueryParallax.merge({
             box: ".js-parallax-box",
             bg: ".js-parallax-bg",
             smooth: true,
-            observe: true
+            observe: true,
+            loadBox: function () {
+            }
         }, options);
     }
 
@@ -36,13 +38,13 @@ class NoJqueryParallax {
             let item = new Item(this.sections[i], this.config.bg), instance = null;
             switch (item.getSourceType()) {
                 case "image":
-                    instance = new ImageParallax(item);
+                    instance = new ImageParallax(item, this.config);
                     break;
                 case "video":
-                    instance = new VideoParallax(item);
+                    instance = new VideoParallax(item, this.config);
                     break;
                 case "content":
-                    instance = new ContentParallax(item);
+                    instance = new ContentParallax(item, this.config);
                     break;
                 default:
             }
@@ -133,7 +135,7 @@ class NoJqueryParallax {
      */
     stopObserve() {
         this.observer.disconnect();
-    } 
+    }
 
     /**
      * Call handlers when window change sizes
@@ -160,9 +162,16 @@ class NoJqueryParallax {
 
     /**
      * Stop smooth scrolling
-     */
+     */ 
     stopSmooth() {
         this.smooth.stop();
+    }
+
+    /**
+     * Start smooth scrolling
+     */
+    startSmooth() {
+        this.smooth.run();
     }
 }
 global.NoJqueryParallax = NoJqueryParallax;

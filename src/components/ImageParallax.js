@@ -4,18 +4,20 @@
 import Base from "./BaseParallax";
 
 class ImageParallax extends Base {
-    constructor(box) {
+    constructor(box, config) {
         super();
         this.box = box;
+        this.config = config;
     }
 
     /**
      * Start parallax
      */
-    start() {
+    start() { 
         super.start();
         this.loadImg(function () {
             this.setBlock();
+            this.config.loadBox(this);
         }, function () {
             console.error("Source load error!");
         });

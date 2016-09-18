@@ -5,9 +5,10 @@ import Base from "./BaseParallax";
 import Uses from "../utility/UsesFunction";
 
 class VideoParallax extends Base {
-    constructor(box) {
+    constructor(box, config) {
         super();
         this.box = box;
+        this.config = config;
     }
 
     /**
@@ -18,6 +19,7 @@ class VideoParallax extends Base {
         if (!Uses.isLiteMode()) {
             this.loadVideo(function () {
                 this.setBlock();
+                this.config.loadBox(this);
             }, function () {
                 console.error("Source load error!");
             });

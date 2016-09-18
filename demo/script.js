@@ -5,7 +5,8 @@
 (function (d, w) {
     $('.flexslider').flexslider();
     var parallax = new NoJqueryParallax({
-        smooth: true
+        smooth: true,
+        loadBox: boxLoad
     });
     document.addEventListener("DOMContentLoaded", function () {
         parallax.run();
@@ -19,4 +20,11 @@
         e.preventDefault();
         e.stopPropagation();
     }, false);
+
+
+    function boxLoad(item) {
+        console.log(item);
+    }
+
+
 }(document, window));

@@ -4,9 +4,10 @@
 import Base from "./BaseParallax";
 
 class ContentParallax extends Base {
-    constructor(box) {
+    constructor(box, config) {
         super();
         this.box = box;
+        this.config = config;
     }
 
     /**
@@ -14,6 +15,7 @@ class ContentParallax extends Base {
      */
     start() {
         super.start();
+        this.config.loadBox(this);
     }
 
     /**

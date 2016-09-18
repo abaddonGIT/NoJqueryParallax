@@ -244,8 +244,10 @@ var BaseParallax = function () {
                 this.box.getItem().innerHTML = "<div class='parallax-bg-inner'></div>";
                 this.box.getInner().style.cssText += 'background-image: url(' + this.box.getUrl() + ');';
             } else {
-                this.box.getItem().innerHTML = '<img class=\'parallax-bg-inner\' src=\'' + this.box.getUrl() + '\' alt=\'\'/>';
-                this.box.setRatio(1);
+                this.box.getItem().innerHTML = "<div class='parallax-bg-inner'></div>";
+                this.box.getInner().style.cssText += 'background-image: url(' + this.box.getUrl() + ');';
+                // this.box.getItem().innerHTML = `<img class='parallax-bg-inner' src='${this.box.getUrl()}' alt=''/>`;
+                // this.box.setRatio(1);
             }
         }
     }]);
@@ -284,12 +286,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var ContentParallax = function (_Base) {
     _inherits(ContentParallax, _Base);
 
-    function ContentParallax(box) {
+    function ContentParallax(box, config) {
         _classCallCheck(this, ContentParallax);
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ContentParallax).call(this));
 
         _this.box = box;
+        _this.config = config;
         return _this;
     }
 
@@ -302,6 +305,7 @@ var ContentParallax = function (_Base) {
         key: "start",
         value: function start() {
             _get(Object.getPrototypeOf(ContentParallax.prototype), "start", this).call(this);
+            this.config.loadBox(this);
         }
 
         /**
@@ -359,12 +363,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var ImageParallax = function (_Base) {
     _inherits(ImageParallax, _Base);
 
-    function ImageParallax(box) {
+    function ImageParallax(box, config) {
         _classCallCheck(this, ImageParallax);
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ImageParallax).call(this));
 
         _this.box = box;
+        _this.config = config;
         return _this;
     }
 
@@ -379,6 +384,7 @@ var ImageParallax = function (_Base) {
             _get(Object.getPrototypeOf(ImageParallax.prototype), "start", this).call(this);
             this.loadImg(function () {
                 this.setBlock();
+                this.config.loadBox(this);
             }, function () {
                 console.error("Source load error!");
             });
@@ -914,12 +920,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VideoParallax = function (_Base) {
     _inherits(VideoParallax, _Base);
 
-    function VideoParallax(box) {
+    function VideoParallax(box, config) {
         _classCallCheck(this, VideoParallax);
 
         var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(VideoParallax).call(this));
 
         _this.box = box;
+        _this.config = config;
         return _this;
     }
 
@@ -935,6 +942,7 @@ var VideoParallax = function (_Base) {
             if (!_UsesFunction2.default.isLiteMode()) {
                 this.loadVideo(function () {
                     this.setBlock();
+                    this.config.loadBox(this);
                 }, function () {
                     console.error("Source load error!");
                 });
@@ -1085,7 +1093,8 @@ var NoJqueryParallax = function () {
             box: ".js-parallax-box",
             bg: ".js-parallax-bg",
             smooth: true,
-            observe: true
+            observe: true,
+            loadBox: function loadBox() {}
         }, options);
     }
 
@@ -1106,13 +1115,13 @@ var NoJqueryParallax = function () {
                     instance = null;
                 switch (item.getSourceType()) {
                     case "image":
-                        instance = new _ImageParallax2.default(item);
+                        instance = new _ImageParallax2.default(item, this.config);
                         break;
                     case "video":
-                        instance = new _VideoParallax2.default(item);
+                        instance = new _VideoParallax2.default(item, this.config);
                         break;
                     case "content":
-                        instance = new _ContentParallax2.default(item);
+                        instance = new _ContentParallax2.default(item, this.config);
                         break;
                     default:
                 }
@@ -1253,6 +1262,16 @@ var NoJqueryParallax = function () {
         key: "stopSmooth",
         value: function stopSmooth() {
             this.smooth.stop();
+        }
+
+        /**
+         * Start smooth scrolling
+         */
+
+    }, {
+        key: "startSmooth",
+        value: function startSmooth() {
+            this.smooth.run();
         }
     }], [{
         key: "merge",

@@ -1,4 +1,4 @@
-# NoJqueryParallax
+# no-jquery-parallax
 Create parallax effect without jquery
 
 ## Browser compatibility
